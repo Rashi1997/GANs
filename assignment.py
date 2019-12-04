@@ -151,7 +151,7 @@ class Generator_Model(tf.keras.Model):
         :return: loss, the cross entropy loss, scalar
         """
         # TODO: Calculate the loss
-        loss = tf.reduce_mean(self.loss(tf.ones_like(disc_fake_output), disc_fake_output))
+        loss = self.loss(tf.ones_like(disc_fake_output), disc_fake_output)
         return loss
 
 class Discriminator_Model(tf.keras.Model):
@@ -162,7 +162,7 @@ class Discriminator_Model(tf.keras.Model):
         """
         # TODO: Define the model, loss, and optimizer
         self.model = tf.keras.Sequential()
-        self.model.add(Conv2D(filters=64, kernel_size=(5,5), strides=(2,2), padding='same'))
+        self.model.add(Conv2D(filters=64, kernel_size=(5,5), strides=(2,2), padding='same', input_shape=(64, 64, 3)))
         self.model.add(LeakyReLU(alpha=0.2))
 
 
@@ -182,8 +182,8 @@ class Discriminator_Model(tf.keras.Model):
 
 
         self.model.add(Flatten())
-        self.model.add(Dense(100, input_shape=(4*4*512,)))
-        self.model.add(LeakyReLU(alpha=0.2))
+        self.model.add(Dense(1))
+        self.model.add(tf.keras.layers.Activation("sigmoid"))
 
         self.loss = tf.keras.losses.BinaryCrossentropy()
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
@@ -200,8 +200,7 @@ class Discriminator_Model(tf.keras.Model):
         :return: a batch of values indicating whether the image is real or fake, shape=[batch_size, 1]
         """
         # TODO: Call the forward pass
-        logits = self.model(inputs)
-        return logits
+        return self.model(inputs)
 
     def loss_function(self, disc_real_output, disc_fake_output):
         """
@@ -213,8 +212,8 @@ class Discriminator_Model(tf.keras.Model):
         :return: loss, the combined cross entropy loss, scalar
         """
         # TODO: Calculate the loss
-        D_loss = tf.reduce_mean(self.loss(tf.zeros_like(disc_fake_output), disc_fake_output))
-        D_loss += tf.reduce_mean(self.loss(tf.ones_like(disc_real_output), disc_real_output))
+        D_loss = self.loss(tf.zeros_like(disc_fake_output), disc_fake_output)
+        D_loss += self.loss(tf.ones_like(disc_real_output), disc_real_output)
         return D_loss
 
 ## --------------------------------------------------------------------------------------
@@ -234,16 +233,30 @@ def train(generator, discriminator, dataset_iterator, manager):
     # Loop over our data until we run out
     for iteration, batch in enumerate(dataset_iterator):
         # TODO: Train the model
-
+        z = tf.random.uniform([args.batch_size, args.z_dim],-1,1)
+        with tf.GradientTape(persistent=True) as tape:
+            gen_output = generator(z)
+            logits_real = discriminator(batch)
+            logits_fake = discriminator(gen_output)
+            g_loss = generator.loss_function(logits_fake, logits_real)
+            d_loss = discriminator.loss_function(logits_fake, logits_real)
+        gradients = tape.gradient(g_loss, generator.trainable_variables)
+        generator.optimizer.apply_gradients(zip(gradients, generator.trainable_variables))
+        gradients = tape.gradient(d_loss, discriminator.trainable_variables)
+        discriminator.optimizer.apply_gradients(zip(gradients, discriminator.trainable_variables))
         # Save
         if iteration % args.save_every == 0:
             manager.save()
 
         # Calculate inception distance and track the fid in order
         # to return the average
+        totalfid, step = 0, 0
         if iteration % 500 == 0:
             fid_ = fid_function(batch, gen_output)
             print('**** INCEPTION DISTANCE: %g ****' % fid_)
+            totalfid += fid_
+            step += 1
+    return totalfid/step
 
 
 # Test the model by generating some samples.
