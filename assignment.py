@@ -109,6 +109,27 @@ class Generator_Model(tf.keras.Model):
         """
         super(Generator_Model, self).__init__()
         # TODO: Define the model, loss, and optimizer
+        self.model = tf.keras.Sequential()
+        self.model.add(Dense(4*4*512, input_shape=(args.z_dim,)))
+        self.model.add(BatchNormalization())
+        self.model.add(ReLU())
+        self.model.add(Reshape((512, 4, 4)))
+
+        self.model.add(Conv2DTranspose(filters=256, kernel_size=(5,5), strides=(2,2), padding='same'))
+        self.model.add(BatchNormalization())
+        self.model.add(ReLU())
+
+        self.model.add(Conv2DTranspose(filters=128, kernel_size=(5,5), strides=(2,2), padding='same'))
+        self.model.add(BatchNormalization())
+        self.model.add(ReLU())
+        
+        self.model.add(Conv2DTranspose(filters=64, kernel_size=(5,5), strides=(2,2), padding='same'))
+        self.model.add(BatchNormalization())
+        self.model.add(ReLU())
+
+        self.model.add(Conv2DTranspose(filters=3, kernel_size=(5,5), strides=(2,2), padding='same', activation='tanh'))
+        self.loss = tf.keras.losses.BinaryCrossentropy()
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
         pass
 
     @tf.function
@@ -121,7 +142,8 @@ class Generator_Model(tf.keras.Model):
         :return: prescaled generated images, shape=[batch_size, height, width, channel]
         """
         # TODO: Call the forward pass
-        pass
+        logits = self.model(inputs)
+        return logits
 
     @tf.function
     def loss_function(self, disc_fake_output):
@@ -133,7 +155,8 @@ class Generator_Model(tf.keras.Model):
         :return: loss, the cross entropy loss, scalar
         """
         # TODO: Calculate the loss
-        pass
+        loss = tf.reduce_mean(self.loss(tf.ones_like(disc_fake_output), disc_fake_output))
+        return loss
 
 class Discriminator_Model(tf.keras.Model):
     def __init__(self):
@@ -142,6 +165,32 @@ class Discriminator_Model(tf.keras.Model):
         The model for the discriminator network is defined here. 
         """
         # TODO: Define the model, loss, and optimizer
+        self.model = tf.keras.Sequential()
+        self.model.add(Conv2D(filters=64, kernel_size=(5,5), strides=(2,2), padding='same'))
+        self.model.add(LeakyReLU(alpha=0.2))
+
+
+        self.model.add(Conv2D(filters=128, kernel_size=(5,5), strides=(2,2), padding='same'))
+        self.model.add(BatchNormalization())
+        self.model.add(LeakyReLU(alpha=0.2))
+
+
+        self.model.add(Conv2D(filters=256, kernel_size=(5,5), strides=(2,2), padding='same'))
+        self.model.add(BatchNormalization())
+        self.model.add(LeakyReLU(alpha=0.2))
+
+        
+        self.model.add(Conv2D(filters=512, kernel_size=(5,5), strides=(2,2), padding='same'))
+        self.model.add(BatchNormalization())
+        self.model.add(LeakyReLU(alpha=0.2))
+
+
+        self.model.add(Flatten())
+        self.model.add(Dense(100, input_shape=(4*4*512,)))
+        self.model.add(LeakyReLU(alpha=0.2))
+
+        self.loss = tf.keras.losses.BinaryCrossentropy()
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
         pass
 
 
@@ -155,7 +204,8 @@ class Discriminator_Model(tf.keras.Model):
         :return: a batch of values indicating whether the image is real or fake, shape=[batch_size, 1]
         """
         # TODO: Call the forward pass
-        pass
+        logits = self.model(inputs)
+        return logits
 
     def loss_function(self, disc_real_output, disc_fake_output):
         """
@@ -167,7 +217,9 @@ class Discriminator_Model(tf.keras.Model):
         :return: loss, the combined cross entropy loss, scalar
         """
         # TODO: Calculate the loss
-        pass
+        D_loss = tf.reduce_mean(self.loss(tf.zeros_like(disc_fake_output), disc_fake_output))
+        D_loss += tf.reduce_mean(self.loss(tf.ones_like(disc_real_output), disc_real_output))
+        return D_loss
 
 ## --------------------------------------------------------------------------------------
 
