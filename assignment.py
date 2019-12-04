@@ -110,17 +110,17 @@ class Generator_Model(tf.keras.Model):
         super(Generator_Model, self).__init__()
         # TODO: Define the model, loss, and optimizer
         self.model = tf.keras.Sequential()
-        self.model.add(Dense(4*4*512, input_shape=(args.z_dim,), activation=tf.keras.layers.ReLU()))
+        self.model.add(Dense(4*4*512, input_shape=(args.z_dim,), activation='relu'))
         self.model.add(BatchNormalization())
         self.model.add(Reshape((512, 4, 4)))
 
-        self.model.add(Conv2DTranspose(filters=256, kernel_size=(5,5), strides=(2,2), padding='same', activation=tf.keras.layers.ReLU()))
+        self.model.add(Conv2DTranspose(filters=256, kernel_size=(5,5), strides=(2,2), padding='same', activation='relu'))
         self.model.add(BatchNormalization())
 
-        self.model.add(Conv2DTranspose(filters=128, kernel_size=(5,5), strides=(2,2), padding='same', activation=tf.keras.layers.ReLU()))
+        self.model.add(Conv2DTranspose(filters=128, kernel_size=(5,5), strides=(2,2), padding='same', activation='relu'))
         self.model.add(BatchNormalization())
         
-        self.model.add(Conv2DTranspose(filters=64, kernel_size=(5,5), strides=(2,2), padding='same', activation=tf.keras.layers.ReLU()))
+        self.model.add(Conv2DTranspose(filters=64, kernel_size=(5,5), strides=(2,2), padding='same', activation='relu'))
         self.model.add(BatchNormalization())
 
         self.model.add(Conv2DTranspose(filters=3, kernel_size=(5,5), strides=(2,2), padding='same', activation='tanh'))
