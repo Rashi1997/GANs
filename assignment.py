@@ -231,6 +231,7 @@ def train(generator, discriminator, dataset_iterator, manager):
     :return: The average FID score over the epoch
     """
     # Loop over our data until we run out
+    totalfid, step = 0, 0
     for iteration, batch in enumerate(dataset_iterator):
         # TODO: Train the model
         z = tf.random.uniform([args.batch_size, args.z_dim],-1,1)
@@ -251,8 +252,7 @@ def train(generator, discriminator, dataset_iterator, manager):
 
         # Calculate inception distance and track the fid in order
         # to return the average
-        totalfid, step = 0, 0
-        if iteration % 500 == 0:
+        if iteration % 10 == 0:
             fid_ = fid_function(batch, gen_output)
             print('**** INCEPTION DISTANCE: %g ****' % fid_)
             totalfid += fid_
