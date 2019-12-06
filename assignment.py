@@ -110,22 +110,26 @@ class Generator_Model(tf.keras.Model):
         super(Generator_Model, self).__init__()
         # TODO: Define the model, loss, and optimizer
         self.model = tf.keras.Sequential()
-        self.model.add(Dense(4*4*512, input_shape=(args.z_dim,), activation='relu'))
+        self.model.add(Dense(4*4*512, input_shape=(args.z_dim,)))
         self.model.add(BatchNormalization())
+        self.model.add(LeakyReLU(alpha=0.2))
         self.model.add(Reshape((4, 4, 512)))
 
-        self.model.add(Conv2DTranspose(filters=256, kernel_size=(5,5), strides=(2,2), padding='same', activation='relu'))
+        self.model.add(Conv2DTranspose(filters=256, kernel_size=(5,5), strides=(2,2), padding='same'))
         self.model.add(BatchNormalization())
+        self.model.add(LeakyReLU(alpha=0.2))
 
-        self.model.add(Conv2DTranspose(filters=128, kernel_size=(5,5), strides=(2,2), padding='same', activation='relu'))
+        self.model.add(Conv2DTranspose(filters=128, kernel_size=(5,5), strides=(2,2), padding='same'))
         self.model.add(BatchNormalization())
+        self.model.add(LeakyReLU(alpha=0.2))
         
-        self.model.add(Conv2DTranspose(filters=64, kernel_size=(5,5), strides=(2,2), padding='same', activation='relu'))
+        self.model.add(Conv2DTranspose(filters=64, kernel_size=(5,5), strides=(2,2), padding='same'))
         self.model.add(BatchNormalization())
+        self.model.add(LeakyReLU(alpha=0.2))
 
         self.model.add(Conv2DTranspose(filters=3, kernel_size=(5,5), strides=(2,2), padding='same', activation='tanh'))
         self.loss = tf.keras.losses.BinaryCrossentropy()
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=args.learn_rate, beta_1=args.beta1)
         pass
 
     @tf.function
@@ -186,7 +190,7 @@ class Discriminator_Model(tf.keras.Model):
         self.model.add(tf.keras.layers.Activation("sigmoid"))
 
         self.loss = tf.keras.losses.BinaryCrossentropy()
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=args.learn_rate, beta_1=args.beta1)
         pass
 
 
