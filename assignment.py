@@ -238,13 +238,13 @@ def train(generator, discriminator, dataset_iterator, manager):
     totalfid, step = 0, 0
     for iteration, batch in enumerate(dataset_iterator):
         # TODO: Train the model
-        z = tf.random.uniform([args.batch_size, args.z_dim],-1,1)
+        z = tf.random.uniform([args.batch_size, args.z_dim],minval=-1,maxval=1)
         with tf.GradientTape() as tape, tf.GradientTape() as tape2:
             gen_output = generator(z)
             logits_real = discriminator(batch)
             logits_fake = discriminator(gen_output)
             g_loss = generator.loss_function(logits_fake)
-            d_loss = discriminator.loss_function(logits_fake, logits_real)
+            d_loss = discriminator.loss_function(logits_real, logits_fake)
         print("generator_loss", g_loss)
         print("discriminator_loss", d_loss)
 
