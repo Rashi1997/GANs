@@ -235,7 +235,7 @@ def train(generator, discriminator, dataset_iterator, manager):
     for iteration, batch in enumerate(dataset_iterator):
         # TODO: Train the model
         z = tf.random.uniform([args.batch_size, args.z_dim],-1,1)
-        with tf.GradientTape(persistent=True) as tape:
+        with tf.GradientTape() as tape, tf.GradientTape() as tape2:
             gen_output = generator(z)
             logits_real = discriminator(batch)
             logits_fake = discriminator(gen_output)
@@ -246,7 +246,7 @@ def train(generator, discriminator, dataset_iterator, manager):
 
         gradients = tape.gradient(g_loss, generator.trainable_variables)
         generator.optimizer.apply_gradients(zip(gradients, generator.trainable_variables))
-        gradients = tape.gradient(d_loss, discriminator.trainable_variables)
+        gradients = tape2.gradient(d_loss, discriminator.trainable_variables)
         if iteration%2 == 0:
             discriminator.optimizer.apply_gradients(zip(gradients, discriminator.trainable_variables))
         # Save
