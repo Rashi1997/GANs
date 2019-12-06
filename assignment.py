@@ -245,8 +245,8 @@ def train(generator, discriminator, dataset_iterator, manager):
             logits_fake = discriminator(gen_output)
             g_loss = generator.loss_function(logits_fake)
             d_loss = discriminator.loss_function(logits_real, logits_fake)
-        print("generator_loss", g_loss)
-        print("discriminator_loss", d_loss)
+        # print("generator_loss", g_loss)
+        # print("discriminator_loss", d_loss)
 
         gradients1 = tape.gradient(g_loss, generator.trainable_variables)
         gradients2 = tape2.gradient(d_loss, discriminator.trainable_variables)
