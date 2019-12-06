@@ -244,11 +244,11 @@ def train(generator, discriminator, dataset_iterator, manager):
         print("generator_loss", g_loss)
         print("discriminator_loss", d_loss)
 
-        gradients = tape.gradient(g_loss, generator.trainable_variables)
-        generator.optimizer.apply_gradients(zip(gradients, generator.trainable_variables))
-        gradients = tape2.gradient(d_loss, discriminator.trainable_variables)
+        gradients1 = tape.gradient(g_loss, generator.trainable_variables)
+        gradients2 = tape2.gradient(d_loss, discriminator.trainable_variables)
+        generator.optimizer.apply_gradients(zip(gradients1, generator.trainable_variables))
         if iteration%2 == 0:
-            discriminator.optimizer.apply_gradients(zip(gradients, discriminator.trainable_variables))
+            discriminator.optimizer.apply_gradients(zip(gradients2, discriminator.trainable_variables))
         # Save
         if iteration % args.save_every == 0:
             manager.save()
