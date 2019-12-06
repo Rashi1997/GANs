@@ -277,7 +277,8 @@ def test(generator):
     :return: None
     """
     # TODO: Replace 'None' with code to sample a batch of random images
-    img = None    
+    z = tf.random.uniform([args.batch_size, args.z_dim],minval=-1,maxval=1)
+    img = generator(z) 
 
     ### Below, we've already provided code to save these generated images to files on disk
     # Rescale the image from (-1, 1) to (0, 255)
