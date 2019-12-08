@@ -112,20 +112,16 @@ class Generator_Model(tf.keras.Model):
         self.model = tf.keras.Sequential()
         self.model.add(Dense(4*4*512, input_shape=(args.z_dim,)))
         self.model.add(BatchNormalization())
-        self.model.add(LeakyReLU(alpha=0.2))
         self.model.add(Reshape((4, 4, 512)))
 
-        self.model.add(Conv2DTranspose(filters=256, kernel_size=(5,5), strides=(2,2), padding='same'))
+        self.model.add(Conv2DTranspose(filters=256, kernel_size=(5,5), strides=(2,2), padding='same', activation='relu'))
         self.model.add(BatchNormalization())
-        self.model.add(LeakyReLU(alpha=0.2))
 
-        self.model.add(Conv2DTranspose(filters=128, kernel_size=(5,5), strides=(2,2), padding='same'))
+        self.model.add(Conv2DTranspose(filters=128, kernel_size=(5,5), strides=(2,2), padding='same', activation='relu'))
         self.model.add(BatchNormalization())
-        self.model.add(LeakyReLU(alpha=0.2))
         
-        self.model.add(Conv2DTranspose(filters=64, kernel_size=(5,5), strides=(2,2), padding='same'))
+        self.model.add(Conv2DTranspose(filters=64, kernel_size=(5,5), strides=(2,2), padding='same', activation='relu'))
         self.model.add(BatchNormalization())
-        self.model.add(LeakyReLU(alpha=0.2))
 
         self.model.add(Conv2DTranspose(filters=3, kernel_size=(5,5), strides=(2,2), padding='same', activation='tanh'))
         self.loss = tf.keras.losses.BinaryCrossentropy()
